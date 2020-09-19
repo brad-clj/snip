@@ -5,26 +5,29 @@
 (defn make-search
   [& {:keys [id cmp] :or {id identity, cmp <}}]
   (let [c (comparator cmp)]
-    (fn [v x]
-      (let [f (fn f [start end edge]
-                (if (== start end)
-                  (if (nil? edge)
-                    [start start]
-                    start)
-                  (let [i (quot (+ start end) 2)
-                        r (c x (id (v i)))]
-                    (cond
-                      (and (== r 0) (nil? edge))
-                      [(f start i :left) (f (inc i) end :right)]
+    (fn search
+      ([v x]
+       (search v x 0 (count v)))
+      ([v x start end]
+       (let [f (fn f [start end edge]
+                 (if (== start end)
+                   (if (nil? edge)
+                     [start start]
+                     start)
+                   (let [i (quot (+ start end) 2)
+                         r (c x (id (v i)))]
+                     (cond
+                       (and (== r 0) (nil? edge))
+                       [(f start i :left) (f (inc i) end :right)]
 
-                      (or (> r 0)
-                          (and (== r 0) (= edge :right)))
-                      (recur (inc i) end edge)
+                       (or (> r 0)
+                           (and (== r 0) (= edge :right)))
+                       (recur (inc i) end edge)
 
-                      (or (< r 0)
-                          (and (== r 0) (= edge :left) ))
-                      (recur start i edge)))))]
-        (f 0 (count v) nil)))))
+                       (or (< r 0)
+                           (and (== r 0) (= edge :left) ))
+                       (recur start i edge)))))]
+         (f start end nil))))))
 
 ;; disjoint set
 
